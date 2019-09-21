@@ -1,5 +1,14 @@
 # Node Vault Scratch Container
 
+## Pull Docker image
+```
+docker pull gcr.io/hippo-analytics/node:0.1.0
+```
+or
+```
+docker pull gcr.io/hippo-analytics/node:latest
+```
+
 ## Environment Variables
 
 |Environment Variable|Type|Example Value|Required|
@@ -9,17 +18,19 @@
 |VAULT_TOKEN|string|s.0123456789abcdefghijklmn|required if VAULT_ENABLED=true|
 |VAULT_ADDR|string (hostname)|https://vault.example.com:8200|required if VAULT_ENABLED=true|
 
-## Build Docker
+## Building the Project
+
+### Build Docker
 ```
 npm run docker:build
 ```
 
-## Push Docker
+### Push Docker
 ```
 npm run docker:push
 ```
 
-## Examine Config in Pod Running on Kubernetes
+### Examine Config in Pod Running on Kubernetes
 
 To get the configuration before vault is called
 ```
