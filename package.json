@@ -5,14 +5,32 @@
   "dockerRepo": "gcr.io/hippo-analytics",
   "main": "src/bootstrap.js",
   "scripts": {
+    "lint": "eslint .",
     "docker:build": "docker build -t $(jq .dockerRepo package.json | sed 's/\"//g')/node:$(jq .version package.json | sed 's/\"//g') .",
     "docker:build:latest": "docker build -t $(jq .dockerRepo package.json | sed 's/\"//g')/node:latest .",
     "docker:push": "docker push $(jq .dockerRepo package.json | sed 's/\"//g')/node:$(jq .version package.json | sed 's/\"//g')",
     "docker:push:latest": "docker push $(jq .dockerRepo package.json | sed 's/\"//g')/node:latest"
   },
-  "author": "Jonathan Whitaker <jwhitaker@myhippo.com>",
-  "license": "MIT",
+  "author": "Hippo Analytics Inc. -- Jonathan Whitaker <jwhitaker@myhippo.com>",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "keywords": [
+    "hippo",
+    "vault",
+    "docker",
+    "scratch",
+    "node",
+    "kubernetes",
+    "codefresh",
+    "twistlock"
+  ],
   "dependencies": {
     "node-vault": "^0.9.10"
+  },
+  "devDependencies": {
+    "eslint": "^6.4.0",
+    "eslint-config-google": "^0.14.0"
   }
 }
