@@ -1,0 +1,112 @@
+version: '1.0'
+mode: parallel
+stages:
+  - Pre
+  - Settings
+  - Build
+  - Push
+  - Scanning
+  - Publish
+steps:
+#======================Pre-build steps======================
+  main_clone:
+    type: git-clone
+    stage: Pre
+    arguments:
+      repo: hippo-inc/vault-bootstrap
+      revision: '${{CF_REVISION}}'
+      git: github
+      credentials:
+        username: user
+        password: credentials
+  settings:
+    title: Settings
+    stage: Settings
+    image: codefresh/cli:latest
+    commands:
+      - cf_export REPO=$(jq .dockerRepo package.json | sed 's/\"//g')
+      - cf_export VERSION=$(jq .version package.json | sed 's/\"//g')
+    when:
+      steps:
+        - name: main_clone
+          on:
+            - success
+
+#======================Build Containers======================
+  build:
+    stage: Build
+    type: build
+    image_name: node
+    tag: ${{VERSION}}
+    working_directory: ./
+    dockerfile: Dockerfile
+    no_cf_cache: false
+    retry:
+      maxAttempts: 3
+      delay: 2
+      exponentialFactor: 2
+    when:
+      steps:
+        - name: settings
+          on:
+            - success
+#======================Publish Containers======================
+  push_rc: &push_container
+    type: push
+    stage: Push
+    candidate: ${{build}}
+    tag: ${{VERSION}}.rc
+    image_name: node
+    registry: hippo-analytics
+    retry:
+      maxAttempts: 2
+      delay: 5
+      exponentialFactor: 2
+    when:
+      steps:
+        - name: build
+          on:
+            - success
+
+#======================Scanning======================
+  twistlock:
+    stage: Scanning
+    type: composition
+    composition:
+      version: '2'
+      services:
+        targetimage:
+          image: ${{REPO}}/node:${{VERSION}}.rc
+          command: node -e "console.log('finished pull')"
+    composition_candidates: 
+      scan_service:
+        image: gcr.io/hippo-pre-prod/hippo/operator:1.2.0
+        command: scan ${{REPO}}/node:${{VERSION}}.rc
+        depends_on:
+          - targetimage
+        volumes: # Volumes required to run DIND
+          - /var/run/docker.sock:/var/run/docker.sock
+          - /var/lib/docker:/var/lib/docker
+    add_flow_volume_to_composition: true
+    when:
+      steps:
+        - name: push_rc
+          on:
+            - success
+#======================Publish Containers======================
+  push: &push_container
+    type: push
+    stage: Publish
+    candidate: ${{build}}
+    tag: ${{VERSION}}
+    image_name: node
+    registry: hippo-analytics
+    retry:
+      maxAttempts: 2
+      delay: 5
+      exponentialFactor: 2
+    when:
+      steps:
+        - name: twistlock
+          on:
+            - success
