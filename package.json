@@ -1,0 +1,18 @@
+{
+  "name": "@hippo/base",
+  "version": "0.1.0",
+  "description": "Vault Config Bootstrap",
+  "dockerRepo": "gcr.io/hippo-analytics",
+  "main": "src/bootstrap.js",
+  "scripts": {
+    "docker:build": "docker build -t $(jq .dockerRepo package.json | sed 's/\"//g')/node:$(jq .version package.json | sed 's/\"//g') .",
+    "docker:build:latest": "docker build -t $(jq .dockerRepo package.json | sed 's/\"//g')/node:latest .",
+    "docker:push": "docker push $(jq .dockerRepo package.json | sed 's/\"//g')/node:$(jq .version package.json | sed 's/\"//g')",
+    "docker:push:latest": "docker push $(jq .dockerRepo package.json | sed 's/\"//g')/node:latest"
+  },
+  "author": "Jonathan Whitaker <jwhitaker@myhippo.com>",
+  "license": "MIT",
+  "dependencies": {
+    "node-vault": "^0.9.10"
+  }
+}
